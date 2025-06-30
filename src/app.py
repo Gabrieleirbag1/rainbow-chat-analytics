@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for
+from parser import Parser
 import os
 
 app = Flask(__name__)
@@ -17,8 +18,15 @@ def upload_file():
     if file.filename == '':
         return redirect(request.url)
     if file:
-        file.save(os.path.join(UPLOAD_FOLDER, file.filename))
-        return redirect(url_for('index'))
+        file_path: str = os.path.join(UPLOAD_FOLDER, file.filename)
+        try:
+            file.save(file_path)
+            parser = Parser(file_path)
+            print(parser.get_summary())
+            return redirect(url_for('index'))
+        except FileNotFoundError:
+            return "File not found", 404
+    print("No file part in the request or no file selected.")
     return redirect(request.url)
 
 def create_folders():
