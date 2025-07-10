@@ -1,12 +1,19 @@
 import re
+from os import path
 from typing import List, Dict, Any
+from csv_reader import CSVReader
 
 class Parser:
     def __init__(self, file_path):
         self.file_path = file_path
-        # Match headers like "John Doe Monday 1 January 2023 12:34"
-        # Updated to accept any character in the sender's name
         self.header_pattern = r"^(.*?) (lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche) (\d+) ([A-Za-zé]+) (\d{4}) (\d{2}:\d{2})"
+        self.profanity_list = self.load_profanity_list()
+
+    def load_profanity_list(self) -> List[str]:
+        """Load the profanity list from a CSV file"""
+        csv_path: str = path.join(path.dirname(__file__), 'static', 'data', 'profanity.csv')
+        csv_reader = CSVReader(csv_path, delimiter=',', has_header=False)
+        return csv_reader.read_all()[0] if csv_reader.read_all() else []
     
     def parse(self) -> List[Dict[str, Any]]:
         """Parse the chat file into a structured format with messages and metadata"""
@@ -101,12 +108,8 @@ class Parser:
             word_count[sender] = sum(len(msg['content'].split()) for msg in sender_messages)
         return word_count
     
-    def get_profanity_count_per_sender(self, profanity_list=None):
+    def get_profanity_count_per_sender(self):
         """Count profanity usage by each sender"""
-        if profanity_list is None:
-            profanity_list = ["connard", "fdp", "nul"]
-        
-        messages = self.parse()
         profanity_count = {}
         
         for sender in self.get_unique_senders():
@@ -114,8 +117,7 @@ class Parser:
             count = 0
             for msg in sender_messages:
                 content = msg['content'].lower()
-                # Count each profanity occurrence
-                for word in profanity_list:
+                for word in self.profanity_list:
                     count += content.count(word.lower())
             profanity_count[sender] = count
         
@@ -129,14 +131,10 @@ class Parser:
         total_words = self.get_word_count()
         total_characters = self.get_character_count()
         messages_per_sender = self.get_messages_per_sender(unique_senders)
-        
-        # Add character and word count per sender
         character_count_per_sender = self.get_character_count_per_sender()
         word_count_per_sender = self.get_word_count_per_sender()
         
-        # Add profanity count per sender
-        profanity_list = ["connard", "fdp", "nul"]
-        profanity_count_per_sender = self.get_profanity_count_per_sender(profanity_list)
+        profanity_count_per_sender = self.get_profanity_count_per_sender()
         total_profanity = sum(profanity_count_per_sender.values())
         
         return {
@@ -150,7 +148,7 @@ class Parser:
             'character_count_per_sender': character_count_per_sender,
             'word_count_per_sender': word_count_per_sender,
             'profanity_count_per_sender': profanity_count_per_sender,
-            'profanity_list': profanity_list
+            'profanity_list': self.profanity_list
         }
     
 
