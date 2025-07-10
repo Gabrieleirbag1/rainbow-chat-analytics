@@ -12,24 +12,26 @@
         <h1>Chat Analysis Results</h1>
         <p>Analyzed file: {{ filename }}</p>
     </header>
+
+    <div id="summary"></div>
     
     <main class="results-container">
         <div class="stats-cards">
             <div class="stat-card">
                 <h3>Messages</h3>
-                <div class="stat-number">{{ summary.total_messages }}</div>
+                <div class="stat-number" id="total-messages">Loading...</div>
             </div>
             <div class="stat-card">
                 <h3>Participants</h3>
-                <div class="stat-number">{{ summary.unique_senders }}</div>
+                <div class="stat-number" id="unique-senders">Loading...</div>
             </div>
             <div class="stat-card">
                 <h3>Words</h3>
-                <div class="stat-number">{{ summary.total_words }}</div>
+                <div class="stat-number" id="total-words">Loading...</div>
             </div>
             <div class="stat-card">
                 <h3>Characters</h3>
-                <div class="stat-number">{{ summary.total_characters }}</div>
+                <div class="stat-number" id="total-characters">Loading...</div>
             </div>
         </div>
 
@@ -41,10 +43,8 @@
             <div class="chart-wrapper">
                 <h3>Participants</h3>
                 <div class="participants-list">
-                    <ul>
-                        {% for sender in summary.unique_senders_list %}
-                            <li>{{ sender }}</li>
-                        {% endfor %}
+                    <ul id="participants-list">
+                        <li>Loading participants...</li>
                     </ul>
                 </div>
             </div>
@@ -59,9 +59,6 @@
         <p>&copy; 2023 Rainbow Chat Analytics</p>
     </footer>
 
-    <!-- Pass data from Flask to JavaScript -->
-    
-    <!-- Include external script file -->
     <script src="{{ url_for('static', filename='scripts/js/analytics.js') }}"></script>
 </body>
 </html>
