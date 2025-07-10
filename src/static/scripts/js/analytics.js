@@ -24,11 +24,6 @@ function generateColors(count) {
     return colors;
 }
 
-// Generate data for the chart (equal distribution since we don't have per-user message counts)
-function createDummyData(length) {
-    return Array(length).fill(100);
-}
-
 async function updatePageWithSummary() {
     const summary = await getSummary();
     if (!summary) return;
@@ -42,21 +37,27 @@ async function updatePageWithSummary() {
     // Update participants list
     const participantsList = document.getElementById('participants-list');
     participantsList.innerHTML = ''; // Clear the list
-    summary.unique_senders_list.forEach(sender => {
+    
+    // Get sender names and message counts
+    const senders = summary.unique_senders_list;
+    const messageCounts = senders.map(sender => summary.messages_per_sender[sender]);
+    
+    // Add participants to list with their message counts
+    senders.forEach((sender, index) => {
         const li = document.createElement('li');
-        li.textContent = sender;
+        li.textContent = `${sender}: ${messageCounts[index]} messages`;
         participantsList.appendChild(li);
     });
     
-    // Create pie chart
+    // Create pie chart with actual message counts
     const ctx = document.getElementById('senderChart').getContext('2d');
     new Chart(ctx, {
         type: 'pie',
         data: {
-            labels: summary.unique_senders_list,
+            labels: senders,
             datasets: [{
-                data: createDummyData(summary.unique_senders_list.length),
-                backgroundColor: generateColors(summary.unique_senders_list.length),
+                data: messageCounts,
+                backgroundColor: generateColors(senders.length),
                 borderWidth: 1
             }]
         },
@@ -65,6 +66,17 @@ async function updatePageWithSummary() {
             plugins: {
                 legend: {
                     position: 'right',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.raw || 0;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = Math.round((value / total) * 100);
+                            return `${label}: ${value} messages (${percentage}%)`;
+                        }
+                    }
                 }
             }
         }

@@ -65,6 +65,12 @@ class Parser:
         messages = self.parse()
         return [msg for msg in messages if msg['sender'] == sender]
     
+    def get_messages_per_sender(self, unique_senders) -> Dict[str, int]:
+        messages_per_sender = {}
+        for sender in unique_senders:
+            messages_per_sender[sender] = len(self.get_messages_by_sender(sender))
+        return messages_per_sender
+    
     def get_unique_senders(self):
         messages = self.parse()
         return list(set(msg['sender'] for msg in messages))
@@ -80,18 +86,19 @@ class Parser:
     def get_summary(self):
         """Get a summary of the chat file including total messages, unique senders, and word count"""
         messages = self.parse()
-        print(messages)
         unique_senders = self.get_unique_senders()
         total_messages = len(messages)
         total_words = self.get_word_count()
         total_characters = self.get_character_count()
+        messages_per_sender = self.get_messages_per_sender(unique_senders)
         
         return {
             'total_messages': total_messages,
             'unique_senders': len(unique_senders),
             'total_words': total_words,
             'total_characters': total_characters,
-            'unique_senders_list': unique_senders
+            'unique_senders_list': unique_senders,
+            'messages_per_sender': messages_per_sender
         }
     
 
