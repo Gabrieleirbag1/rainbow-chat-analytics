@@ -117,7 +117,7 @@ function createPieChart(ctx, labels, data, title, colors) {
                         }
                     }
                 }
-            }
+            },
         },
         plugins: [legendMarginPlugin]
     });
@@ -137,7 +137,7 @@ function updateStatCards(summary) {
 }
 
 // Update the participants list with sorted data
-function updateParticipantsList(summary) {
+function updateParticipantsList(summary, showAll = false) {
     const participantsList = document.getElementById('participants-list');
     if (!participantsList) return;
     
@@ -147,8 +147,12 @@ function updateParticipantsList(summary) {
     const sortedSenders = [...summary.unique_senders_list];
     sortedSenders.sort((a, b) => summary.messages_per_sender[b] - summary.messages_per_sender[a]);
     
+    // Limit to 5 items unless showAll is true
+    const limitedSenders = showAll ? sortedSenders : sortedSenders.slice(0, 5);
+    const totalSenders = sortedSenders.length;
+    
     // Add participants to list with their message counts
-    sortedSenders.forEach((sender) => {
+    limitedSenders.forEach((sender) => {
         const li = document.createElement('li');
         li.innerHTML = `
             <span class="list-name" title="${sender}">${sender}</span>
@@ -156,6 +160,14 @@ function updateParticipantsList(summary) {
         `;
         participantsList.appendChild(li);
     });
+    
+    // Add a "View More" item if there are more than 5 participants and showAll is false
+    if (!showAll && totalSenders > 5) {
+        const moreItem = document.createElement('li');
+        moreItem.className = 'view-more';
+        moreItem.textContent = `+ ${totalSenders - 5} more participant(s)`;
+        participantsList.appendChild(moreItem);
+    }
 }
 
 // Create pie chart for message distribution
@@ -192,7 +204,7 @@ function createWordsChart(summary) {
 }
 
 // Update profanity list with sorted data
-function updateProfanityList(summary, sendersWithProfanity) {
+function updateProfanityList(summary, sendersWithProfanity, showAll = false) {
     const profanityList = document.getElementById('profanity-list');
     if (!profanityList) return;
     
@@ -204,7 +216,11 @@ function updateProfanityList(summary, sendersWithProfanity) {
         summary.profanity_count_per_sender[b] - summary.profanity_count_per_sender[a]
     );
     
-    sortedProfanitySenders.forEach((sender) => {
+    // Limit to 5 items unless showAll is true
+    const limitedSenders = showAll ? sortedProfanitySenders : sortedProfanitySenders.slice(0, 5);
+    const totalSenders = sortedProfanitySenders.length;
+    
+    limitedSenders.forEach((sender) => {
         const count = summary.profanity_count_per_sender[sender];
         const li = document.createElement('li');
         li.innerHTML = `
@@ -213,6 +229,14 @@ function updateProfanityList(summary, sendersWithProfanity) {
         `;
         profanityList.appendChild(li);
     });
+    
+    // Add a "View More" item if there are more than 5 users with profanity and showAll is false
+    if (!showAll && totalSenders > 5) {
+        const moreItem = document.createElement('li');
+        moreItem.className = 'view-more';
+        moreItem.textContent = `+ ${totalSenders - 5} more user(s)`;
+        profanityList.appendChild(moreItem);
+    }
 }
 
 // Show profanity words list
@@ -267,6 +291,9 @@ async function updatePageWithSummary() {
     const summary = await getSummary();
     if (!summary) return;
     
+    // Store data globally for use in click handlers
+    window.summaryData = summary;
+    
     updateStatCards(summary);
     updateParticipantsList(summary);
     createMessageDistributionChart(summary);
@@ -276,3 +303,20 @@ async function updatePageWithSummary() {
 }
 
 document.addEventListener('DOMContentLoaded', updatePageWithSummary);
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('view-more') || e.target.parentElement.classList.contains('view-more')) {
+        const targetElement = e.target.classList.contains('view-more') ? e.target : e.target.parentElement;
+        const parentList = targetElement.parentElement;
+        
+        if (parentList.id === 'participants-list') {
+            // Expand participants list
+            updateParticipantsList(window.summaryData, true); // Pass true to show all
+        } else if (parentList.id === 'profanity-list') {
+            // Expand profanity list
+            const sendersWithProfanity = window.summaryData.unique_senders_list.filter(
+                sender => window.summaryData.profanity_count_per_sender[sender] > 0
+            );
+            updateProfanityList(window.summaryData, sendersWithProfanity, true); // Pass true to show all
+        }
+    }
+});
