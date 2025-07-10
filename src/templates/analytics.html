@@ -1,21 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat Analysis Results</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body>
-    <header>
-        <h1>Chat Analysis Results</h1>
-        <p>Analyzed file: {{ filename }}</p>
-    </header>
+{% extends "base.html" %}
 
-    <div id="summary"></div>
-    
-    <main class="results-container">
+{% block title %}Chat Analysis Results{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block header %}
+<div class="container">
+    <h1>Chat Analysis Results</h1>
+    <p class="analyzed-file">Analyzed file: <strong>{{ filename }}</strong></p>
+</div>
+{% endblock %}
+
+{% block content %}
+<section class="analytics-section">
+    <div class="container">
         <div class="stats-cards">
             <div class="stat-card">
                 <h3>Messages</h3>
@@ -52,8 +52,12 @@
         
         <div class="action-buttons">
             <a href="{{ url_for('index') }}" class="button">Analyze Another File</a>
+            <a href="#" id="download-report" class="button button-secondary">Download Report</a>
         </div>
-    </main>
-    <script src="{{ url_for('static', filename='scripts/js/analytics.js') }}"></script>
-</body>
-</html>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='scripts/js/analytics.js') }}"></script>
+{% endblock %}
