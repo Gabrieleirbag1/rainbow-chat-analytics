@@ -65,7 +65,18 @@ function createBarChart(ctx, labels, data, title) {
 }
 
 // Create a pie chart
+// Create a pie chart
 function createPieChart(ctx, labels, data, title, colors) {
+    const legendMarginPlugin = {
+        id: 'legendMargin',
+        beforeInit: (chart) => {
+            // If legend is at the bottom, add extra space
+            if (chart.options.plugins.legend.position === 'bottom') {
+                chart.legend.bottom = 20;
+            }
+        }
+    };
+    
     return new Chart(ctx, {
         type: 'pie',
         data: {
@@ -78,9 +89,19 @@ function createPieChart(ctx, labels, data, title, colors) {
         },
         options: {
             responsive: true,
+            layout: {
+                padding: {
+                    bottom: 15
+                }
+            },
             plugins: {
                 legend: {
                     position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true,
+                        boxWidth: 10
+                    }
                 },
                 tooltip: {
                     callbacks: {
@@ -98,7 +119,8 @@ function createPieChart(ctx, labels, data, title, colors) {
                     }
                 }
             }
-        }
+        },
+        plugins: [legendMarginPlugin]
     });
 }
 

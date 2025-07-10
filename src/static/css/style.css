@@ -153,6 +153,17 @@ button:hover {
   font-weight: 600;
 }
 
+/* Add spacing between chart and legend */
+.chart-wrapper canvas {
+  margin-top: 20px;
+  display: flex;
+}
+
+/* Target legends specifically */
+.chart-js-legend {
+  margin-top: 15px;
+}
+
 /* Enhance lists */
 .participants-list, .profanity-list {
   max-height: 300px;
