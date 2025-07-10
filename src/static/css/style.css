@@ -231,7 +231,6 @@ button:hover {
   border-bottom: none;
 }
 
-/* Top 3 ranking styles */
 .participants-list li:nth-child(1)::before, .profanity-list li:nth-child(1)::before {
   background-color: #FFD700;
   color: #333;
@@ -245,6 +244,10 @@ button:hover {
 .participants-list li:nth-child(3)::before, .profanity-list li:nth-child(3)::before {
   background-color: #CD7F32;
   color: #333;
+}
+
+.stat-card:nth-child(5) {
+  border-top: 4px solid #FF5252; 
 }
 
 /* Enhance name and count display with text overflow handling */

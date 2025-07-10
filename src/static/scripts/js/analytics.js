@@ -130,6 +130,11 @@ function updateStatCards(summary) {
     document.getElementById('unique-senders').textContent = summary.unique_senders.toLocaleString();
     document.getElementById('total-words').textContent = summary.total_words.toLocaleString();
     document.getElementById('total-characters').textContent = summary.total_characters.toLocaleString();
+    
+    // Add this line to update the new stat card
+    if (summary.total_profanity !== undefined) {
+        document.getElementById('total-profanity').textContent = summary.total_profanity.toLocaleString();
+    }
 }
 
 // Update the participants list with sorted data
