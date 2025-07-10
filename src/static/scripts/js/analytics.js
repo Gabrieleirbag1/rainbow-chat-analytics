@@ -194,11 +194,11 @@ function showProfanityWordsList(summary) {
 // Handle no profanity case
 function handleNoProfanityFound(summary, profanityCtx) {
     const chartContainer = profanityCtx.canvas.parentNode;
-    chartContainer.innerHTML = '<p class="no-data">Aucune insulte trouvée dans la conversation</p>';
+    chartContainer.innerHTML = '<p class="no-data">No insults found in the conversation</p>';
     
     const profanityList = document.getElementById('profanity-list');
     if (profanityList) {
-        profanityList.innerHTML = '<li>Aucune insulte détectée</li>';
+        profanityList.innerHTML = '<li>No insults detected</li>';
     }
     
     showProfanityWordsList(summary);
@@ -222,7 +222,7 @@ function createProfanityChart(summary) {
     
     // Only create chart if there's data
     if (sendersWithProfanity.length > 0) {
-        createPieChart(profanityCtx.getContext('2d'), sendersWithProfanity, profanityData, "Insultes", profanityColors);
+        createPieChart(profanityCtx.getContext('2d'), sendersWithProfanity, profanityData, "Insults", profanityColors);
         updateProfanityList(summary, sendersWithProfanity);
         showProfanityWordsList(summary);
     } else {
