@@ -83,6 +83,24 @@ class Parser:
         lines = self.get_lines()
         return sum(len(line) for line in lines)
     
+    def get_character_count_per_sender(self):
+        """Get character count for each sender"""
+        messages = self.parse()
+        character_count = {}
+        for sender in self.get_unique_senders():
+            sender_messages = self.get_messages_by_sender(sender)
+            character_count[sender] = sum(len(msg['content']) for msg in sender_messages)
+        return character_count
+
+    def get_word_count_per_sender(self):
+        """Get word count for each sender"""
+        messages = self.parse()
+        word_count = {}
+        for sender in self.get_unique_senders():
+            sender_messages = self.get_messages_by_sender(sender)
+            word_count[sender] = sum(len(msg['content'].split()) for msg in sender_messages)
+        return word_count
+    
     def get_summary(self):
         """Get a summary of the chat file including total messages, unique senders, and word count"""
         messages = self.parse()
@@ -92,13 +110,19 @@ class Parser:
         total_characters = self.get_character_count()
         messages_per_sender = self.get_messages_per_sender(unique_senders)
         
+        # Add character and word count per sender
+        character_count_per_sender = self.get_character_count_per_sender()
+        word_count_per_sender = self.get_word_count_per_sender()
+        
         return {
             'total_messages': total_messages,
             'unique_senders': len(unique_senders),
             'total_words': total_words,
             'total_characters': total_characters,
             'unique_senders_list': unique_senders,
-            'messages_per_sender': messages_per_sender
+            'messages_per_sender': messages_per_sender,
+            'character_count_per_sender': character_count_per_sender,
+            'word_count_per_sender': word_count_per_sender
         }
     
 

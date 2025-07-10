@@ -1,5 +1,4 @@
 async function getSummary() {
-    const summaryDiv = document.getElementById("summary");
     try {
         const response = await fetch('/api/summary');
         if (!response.ok) {
@@ -9,7 +8,6 @@ async function getSummary() {
         return summaryJson;
     } catch (error) {
         console.error('Error fetching summary:', error);
-        summaryDiv.innerHTML = 'Error loading summary data';
         return null;
     }
 }
@@ -24,15 +22,57 @@ function generateColors(count) {
     return colors;
 }
 
+// Create a bar chart
+function createBarChart(ctx, labels, data, title) {
+    return new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: title,
+                data: data,
+                backgroundColor: generateColors(labels.length),
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const value = context.raw;
+                            if (title === "Characters") {
+                                return `${value.toLocaleString()} characters`;
+                            } else if (title === "Words") {
+                                return `${value.toLocaleString()} words`;
+                            }
+                            return value;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
 async function updatePageWithSummary() {
     const summary = await getSummary();
     if (!summary) return;
     
     // Update stat cards
-    document.getElementById('total-messages').textContent = summary.total_messages;
-    document.getElementById('unique-senders').textContent = summary.unique_senders;
-    document.getElementById('total-words').textContent = summary.total_words;
-    document.getElementById('total-characters').textContent = summary.total_characters;
+    document.getElementById('total-messages').textContent = summary.total_messages.toLocaleString();
+    document.getElementById('unique-senders').textContent = summary.unique_senders.toLocaleString();
+    document.getElementById('total-words').textContent = summary.total_words.toLocaleString();
+    document.getElementById('total-characters').textContent = summary.total_characters.toLocaleString();
     
     // Update participants list
     const participantsList = document.getElementById('participants-list');
@@ -42,10 +82,14 @@ async function updatePageWithSummary() {
     const senders = summary.unique_senders_list;
     const messageCounts = senders.map(sender => summary.messages_per_sender[sender]);
     
+    // Sort senders by message count for the list
+    const sortedSenders = [...senders];
+    sortedSenders.sort((a, b) => summary.messages_per_sender[b] - summary.messages_per_sender[a]);
+    
     // Add participants to list with their message counts
-    senders.forEach((sender, index) => {
+    sortedSenders.forEach((sender) => {
         const li = document.createElement('li');
-        li.textContent = `${sender}: ${messageCounts[index]} messages`;
+        li.textContent = `${sender}: ${summary.messages_per_sender[sender].toLocaleString()} messages`;
         participantsList.appendChild(li);
     });
     
@@ -74,13 +118,23 @@ async function updatePageWithSummary() {
                             const value = context.raw || 0;
                             const total = context.dataset.data.reduce((a, b) => a + b, 0);
                             const percentage = Math.round((value / total) * 100);
-                            return `${label}: ${value} messages (${percentage}%)`;
+                            return `${label}: ${value.toLocaleString()} messages (${percentage}%)`;
                         }
                     }
                 }
             }
         }
     });
+    
+    // Characters chart
+    const charCtx = document.getElementById('charactersChart').getContext('2d');
+    const charData = senders.map(sender => summary.character_count_per_sender[sender]);
+    createBarChart(charCtx, senders, charData, "Characters");
+    
+    // Words chart
+    const wordCtx = document.getElementById('wordsChart').getContext('2d');
+    const wordData = senders.map(sender => summary.word_count_per_sender[sender]);
+    createBarChart(wordCtx, senders, wordData, "Words");
 }
 
 document.addEventListener('DOMContentLoaded', updatePageWithSummary);

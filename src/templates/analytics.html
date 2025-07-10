@@ -50,6 +50,18 @@
             </div>
         </div>
         
+        <!-- Nouveaux graphiques -->
+        <div class="charts-container">
+            <div class="chart-wrapper">
+                <h3>Characters Written by Participant</h3>
+                <canvas id="charactersChart"></canvas>
+            </div>
+            <div class="chart-wrapper">
+                <h3>Words Written by Participant</h3>
+                <canvas id="wordsChart"></canvas>
+            </div>
+        </div>
+        
         <div class="action-buttons">
             <a href="{{ url_for('index') }}" class="button">Analyze Another File</a>
             <a href="#" id="download-report" class="button button-secondary">Download Report</a>
