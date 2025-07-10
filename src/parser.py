@@ -2,6 +2,7 @@ import re
 from os import path
 from typing import List, Dict, Any
 from csv_reader import CSVReader
+from unidecode import unidecode
 
 class Parser:
     def __init__(self, file_path):
@@ -117,8 +118,10 @@ class Parser:
             count = 0
             for msg in sender_messages:
                 content = msg['content'].lower()
+                normalized_content = unidecode(content)
                 for word in self.profanity_list:
-                    count += content.count(word.lower())
+                    normalized_word = unidecode(word.lower())
+                    count += normalized_content.count(normalized_word)
             profanity_count[sender] = count
         
         return profanity_count

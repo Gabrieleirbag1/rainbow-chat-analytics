@@ -36,7 +36,6 @@ def get_summary():
     if current_file_path:
         parser = Parser(current_file_path)
         summary = parser.get_summary()
-        print(summary)
         return jsonify(summary)
     else:
         return jsonify({"error": "No file has been uploaded"}), 400
