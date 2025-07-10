@@ -68,10 +68,6 @@ function createBarChart(ctx, labels, data, title) {
 function createPieChart(ctx, labels, data, title, colors) {
     return new Chart(ctx, {
         type: 'pie',
-        top: '-20%',
-        left: '-20%',
-        right: '-20%',
-        bottom: '-20%',
         data: {
             labels: labels,
             datasets: [{
