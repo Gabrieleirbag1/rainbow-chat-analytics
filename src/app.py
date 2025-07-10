@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 from parser import Parser
 import os
 
@@ -22,8 +22,10 @@ def upload_file():
         try:
             file.save(file_path)
             parser = Parser(file_path)
-            print(parser.get_summary())
-            return redirect(url_for('index'))
+            summary = parser.get_summary()
+            return render_template('results.html', 
+                                  summary=summary, 
+                                  filename=file.filename)
         except FileNotFoundError:
             return "File not found", 404
     print("No file part in the request or no file selected.")
