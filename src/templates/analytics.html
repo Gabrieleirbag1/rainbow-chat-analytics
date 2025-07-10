@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Analysis Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Chat Analysis Results</h1>
+        <p>Analyzed file: {{ filename }}</p>
+    </header>
+    
+    <main class="results-container">
+        <div class="stats-cards">
+            <div class="stat-card">
+                <h3>Messages</h3>
+                <div class="stat-number">{{ summary.total_messages }}</div>
+            </div>
+            <div class="stat-card">
+                <h3>Participants</h3>
+                <div class="stat-number">{{ summary.unique_senders }}</div>
+            </div>
+            <div class="stat-card">
+                <h3>Words</h3>
+                <div class="stat-number">{{ summary.total_words }}</div>
+            </div>
+            <div class="stat-card">
+                <h3>Characters</h3>
+                <div class="stat-number">{{ summary.total_characters }}</div>
+            </div>
+        </div>
+
+        <div class="charts-container">
+            <div class="chart-wrapper">
+                <h3>Message Distribution by Participant</h3>
+                <canvas id="senderChart"></canvas>
+            </div>
+            <div class="chart-wrapper">
+                <h3>Participants</h3>
+                <div class="participants-list">
+                    <ul>
+                        {% for sender in summary.unique_senders_list %}
+                            <li>{{ sender }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="action-buttons">
+            <a href="{{ url_for('index') }}" class="button">Analyze Another File</a>
+        </div>
+    </main>
+    
+    <footer>
+        <p>&copy; 2023 Rainbow Chat Analytics</p>
+    </footer>
+
+    <!-- Pass data from Flask to JavaScript -->
+    
+    <!-- Include external script file -->
+    <script src="{{ url_for('static', filename='scripts/js/analytics.js') }}"></script>
+</body>
+</html>

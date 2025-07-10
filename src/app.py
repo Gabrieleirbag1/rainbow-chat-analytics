@@ -23,7 +23,8 @@ def upload_file():
             file.save(file_path)
             parser = Parser(file_path)
             summary = parser.get_summary()
-            return render_template('results.html', 
+            print(summary)
+            return render_template('analytics.html', 
                                   summary=summary, 
                                   filename=file.filename)
         except FileNotFoundError:

@@ -1,4 +1,18 @@
-// Chart configuration and functionality
+let summary = {};
+
+async function getSummary() {
+    return fetch('/api/summary')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .catch(error => {
+            console.error('Error fetching summary data:', error);
+            return {};
+        });
+}
 
 // Create a rainbow color palette based on number of senders
 function generateColors(count) {
@@ -16,9 +30,9 @@ function createDummyData(length) {
 }
 
 function initializePieChart() {
-
+    summary = getSummary()
     // Get data from the global variable set in HTML
-    const senderLabels = 6;
+    const senderLabels = summary.unique_senders;
 
     // Pie chart for sender distribution
     const ctx = document.getElementById('senderChart').getContext('2d');
