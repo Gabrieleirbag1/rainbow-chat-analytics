@@ -68,6 +68,10 @@ function createBarChart(ctx, labels, data, title) {
 function createPieChart(ctx, labels, data, title, colors) {
     return new Chart(ctx, {
         type: 'pie',
+        top: '-20%',
+        left: '-20%',
+        right: '-20%',
+        bottom: '-20%',
         data: {
             labels: labels,
             datasets: [{
@@ -80,7 +84,7 @@ function createPieChart(ctx, labels, data, title, colors) {
             responsive: true,
             plugins: {
                 legend: {
-                    position: 'right',
+                    position: 'bottom',
                 },
                 tooltip: {
                     callbacks: {
@@ -90,8 +94,8 @@ function createPieChart(ctx, labels, data, title, colors) {
                             const total = context.dataset.data.reduce((a, b) => a + b, 0);
                             const percentage = Math.round((value / total) * 100);
                             
-                            if (title === "Insultes") {
-                                return `${label}: ${value.toLocaleString()} insultes (${percentage}%)`;
+                            if (title === "Insults") {
+                                return `${label}: ${value.toLocaleString()} insults (${percentage}%)`;
                             }
                             return `${label}: ${value.toLocaleString()} (${percentage}%)`;
                         }
@@ -124,7 +128,10 @@ function updateParticipantsList(summary) {
     // Add participants to list with their message counts
     sortedSenders.forEach((sender) => {
         const li = document.createElement('li');
-        li.textContent = `${sender}: ${summary.messages_per_sender[sender].toLocaleString()} messages`;
+        li.innerHTML = `
+            <span class="list-name" title="${sender}">${sender}</span>
+            <span class="list-count">${summary.messages_per_sender[sender].toLocaleString()} messages</span>
+        `;
         participantsList.appendChild(li);
     });
 }
@@ -178,7 +185,10 @@ function updateProfanityList(summary, sendersWithProfanity) {
     sortedProfanitySenders.forEach((sender) => {
         const count = summary.profanity_count_per_sender[sender];
         const li = document.createElement('li');
-        li.textContent = `${sender}: ${count} insulte${count > 1 ? 's' : ''}`;
+        li.innerHTML = `
+            <span class="list-name" title="${sender}">${sender}</span>
+            <span class="list-count">${count} insulte${count > 1 ? 's' : ''}</span>
+        `;
         profanityList.appendChild(li);
     });
 }
