@@ -64,6 +64,44 @@ function createBarChart(ctx, labels, data, title) {
     });
 }
 
+// Create a pie chart
+function createPieChart(ctx, labels, data, title, colors) {
+    return new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: data,
+                backgroundColor: colors || generateColors(labels.length),
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'right',
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.raw || 0;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = Math.round((value / total) * 100);
+                            
+                            if (title === "Insultes") {
+                                return `${label}: ${value.toLocaleString()} insultes (${percentage}%)`;
+                            }
+                            return `${label}: ${value.toLocaleString()} (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
 async function updatePageWithSummary() {
     const summary = await getSummary();
     if (!summary) return;
@@ -95,36 +133,7 @@ async function updatePageWithSummary() {
     
     // Create pie chart with actual message counts
     const ctx = document.getElementById('senderChart').getContext('2d');
-    new Chart(ctx, {
-        type: 'pie',
-        data: {
-            labels: senders,
-            datasets: [{
-                data: messageCounts,
-                backgroundColor: generateColors(senders.length),
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'right',
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            const label = context.label || '';
-                            const value = context.raw || 0;
-                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                            const percentage = Math.round((value / total) * 100);
-                            return `${label}: ${value.toLocaleString()} messages (${percentage}%)`;
-                        }
-                    }
-                }
-            }
-        }
-    });
+    createPieChart(ctx, senders, messageCounts, "Messages");
     
     // Characters chart
     const charCtx = document.getElementById('charactersChart').getContext('2d');
@@ -135,6 +144,63 @@ async function updatePageWithSummary() {
     const wordCtx = document.getElementById('wordsChart').getContext('2d');
     const wordData = senders.map(sender => summary.word_count_per_sender[sender]);
     createBarChart(wordCtx, senders, wordData, "Words");
+    
+    // Profanity chart
+    if (summary.profanity_count_per_sender && document.getElementById('profanityChart')) {
+        const profanityCtx = document.getElementById('profanityChart').getContext('2d');
+        
+        // Filter out senders with no profanity
+        const sendersWithProfanity = senders.filter(sender => summary.profanity_count_per_sender[sender] > 0);
+        const profanityData = sendersWithProfanity.map(sender => summary.profanity_count_per_sender[sender]);
+        
+        // Use vibrant colors for profanity chart
+        const profanityColors = generateColors(sendersWithProfanity.length).map(color => color.replace('60%', '50%'));
+        
+        // Only create chart if there's data
+        if (sendersWithProfanity.length > 0) {
+            createPieChart(profanityCtx, sendersWithProfanity, profanityData, "Insultes", profanityColors);
+            
+            // Update profanity list
+            const profanityList = document.getElementById('profanity-list');
+            if (profanityList) {
+                profanityList.innerHTML = '';
+                
+                // Sort senders by profanity count
+                const sortedProfanitySenders = [...sendersWithProfanity];
+                sortedProfanitySenders.sort((a, b) => 
+                    summary.profanity_count_per_sender[b] - summary.profanity_count_per_sender[a]
+                );
+                
+                sortedProfanitySenders.forEach((sender) => {
+                    const count = summary.profanity_count_per_sender[sender];
+                    const li = document.createElement('li');
+                    li.textContent = `${sender}: ${count} insulte${count > 1 ? 's' : ''}`;
+                    profanityList.appendChild(li);
+                });
+            }
+            
+            // Show profanity words list
+            const profanityWords = document.getElementById('profanity-words');
+            if (profanityWords && summary.profanity_list) {
+                profanityWords.textContent = summary.profanity_list.join(', ');
+            }
+        } else {
+            // No profanity found
+            const chartContainer = profanityCtx.canvas.parentNode;
+            chartContainer.innerHTML = '<p class="no-data">Aucune insulte trouvée dans la conversation</p>';
+            
+            const profanityList = document.getElementById('profanity-list');
+            if (profanityList) {
+                profanityList.innerHTML = '<li>Aucune insulte détectée</li>';
+            }
+            
+            // Show profanity words list anyway
+            const profanityWords = document.getElementById('profanity-words');
+            if (profanityWords && summary.profanity_list) {
+                profanityWords.textContent = summary.profanity_list.join(', ');
+            }
+        }
+    }
 }
 
 document.addEventListener('DOMContentLoaded', updatePageWithSummary);

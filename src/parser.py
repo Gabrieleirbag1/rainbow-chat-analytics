@@ -101,6 +101,26 @@ class Parser:
             word_count[sender] = sum(len(msg['content'].split()) for msg in sender_messages)
         return word_count
     
+    def get_profanity_count_per_sender(self, profanity_list=None):
+        """Count profanity usage by each sender"""
+        if profanity_list is None:
+            profanity_list = ["connard", "fdp", "nul"]
+        
+        messages = self.parse()
+        profanity_count = {}
+        
+        for sender in self.get_unique_senders():
+            sender_messages = self.get_messages_by_sender(sender)
+            count = 0
+            for msg in sender_messages:
+                content = msg['content'].lower()
+                # Count each profanity occurrence
+                for word in profanity_list:
+                    count += content.count(word.lower())
+            profanity_count[sender] = count
+        
+        return profanity_count
+
     def get_summary(self):
         """Get a summary of the chat file including total messages, unique senders, and word count"""
         messages = self.parse()
@@ -114,15 +134,23 @@ class Parser:
         character_count_per_sender = self.get_character_count_per_sender()
         word_count_per_sender = self.get_word_count_per_sender()
         
+        # Add profanity count per sender
+        profanity_list = ["connard", "fdp", "nul"]
+        profanity_count_per_sender = self.get_profanity_count_per_sender(profanity_list)
+        total_profanity = sum(profanity_count_per_sender.values())
+        
         return {
             'total_messages': total_messages,
             'unique_senders': len(unique_senders),
             'total_words': total_words,
             'total_characters': total_characters,
+            'total_profanity': total_profanity,
             'unique_senders_list': unique_senders,
             'messages_per_sender': messages_per_sender,
             'character_count_per_sender': character_count_per_sender,
-            'word_count_per_sender': word_count_per_sender
+            'word_count_per_sender': word_count_per_sender,
+            'profanity_count_per_sender': profanity_count_per_sender,
+            'profanity_list': profanity_list
         }
     
 
