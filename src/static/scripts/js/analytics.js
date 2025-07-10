@@ -65,7 +65,6 @@ function createBarChart(ctx, labels, data, title) {
 }
 
 // Create a pie chart
-// Create a pie chart
 function createPieChart(ctx, labels, data, title, colors) {
     const legendMarginPlugin = {
         id: 'legendMargin',
@@ -112,9 +111,9 @@ function createPieChart(ctx, labels, data, title, colors) {
                             const percentage = Math.round((value / total) * 100);
                             
                             if (title === "Insults") {
-                                return `${label}: ${value.toLocaleString()} insults (${percentage}%)`;
+                                return ` ${value.toLocaleString()} insults (${percentage}%)`;
                             }
-                            return `${label}: ${value.toLocaleString()} (${percentage}%)`;
+                            return ` ${value.toLocaleString()} (${percentage}%)`;
                         }
                     }
                 }
