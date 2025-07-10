@@ -102,26 +102,23 @@ function createPieChart(ctx, labels, data, title, colors) {
     });
 }
 
-async function updatePageWithSummary() {
-    const summary = await getSummary();
-    if (!summary) return;
-    
-    // Update stat cards
+// Update the stat cards with summary data
+function updateStatCards(summary) {
     document.getElementById('total-messages').textContent = summary.total_messages.toLocaleString();
     document.getElementById('unique-senders').textContent = summary.unique_senders.toLocaleString();
     document.getElementById('total-words').textContent = summary.total_words.toLocaleString();
     document.getElementById('total-characters').textContent = summary.total_characters.toLocaleString();
-    
-    // Update participants list
+}
+
+// Update the participants list with sorted data
+function updateParticipantsList(summary) {
     const participantsList = document.getElementById('participants-list');
+    if (!participantsList) return;
+    
     participantsList.innerHTML = ''; // Clear the list
     
-    // Get sender names and message counts
-    const senders = summary.unique_senders_list;
-    const messageCounts = senders.map(sender => summary.messages_per_sender[sender]);
-    
     // Sort senders by message count for the list
-    const sortedSenders = [...senders];
+    const sortedSenders = [...summary.unique_senders_list];
     sortedSenders.sort((a, b) => summary.messages_per_sender[b] - summary.messages_per_sender[a]);
     
     // Add participants to list with their message counts
@@ -130,77 +127,120 @@ async function updatePageWithSummary() {
         li.textContent = `${sender}: ${summary.messages_per_sender[sender].toLocaleString()} messages`;
         participantsList.appendChild(li);
     });
+}
+
+// Create pie chart for message distribution
+function createMessageDistributionChart(summary) {
+    const ctx = document.getElementById('senderChart');
+    if (!ctx) return;
     
-    // Create pie chart with actual message counts
-    const ctx = document.getElementById('senderChart').getContext('2d');
-    createPieChart(ctx, senders, messageCounts, "Messages");
+    const senders = summary.unique_senders_list;
+    const messageCounts = senders.map(sender => summary.messages_per_sender[sender]);
     
-    // Characters chart
-    const charCtx = document.getElementById('charactersChart').getContext('2d');
+    createPieChart(ctx.getContext('2d'), senders, messageCounts, "Messages");
+}
+
+// Create bar chart for character counts
+function createCharactersChart(summary) {
+    const charCtx = document.getElementById('charactersChart');
+    if (!charCtx) return;
+    
+    const senders = summary.unique_senders_list;
     const charData = senders.map(sender => summary.character_count_per_sender[sender]);
-    createBarChart(charCtx, senders, charData, "Characters");
     
-    // Words chart
-    const wordCtx = document.getElementById('wordsChart').getContext('2d');
+    createBarChart(charCtx.getContext('2d'), senders, charData, "Characters");
+}
+
+// Create bar chart for word counts
+function createWordsChart(summary) {
+    const wordCtx = document.getElementById('wordsChart');
+    if (!wordCtx) return;
+    
+    const senders = summary.unique_senders_list;
     const wordData = senders.map(sender => summary.word_count_per_sender[sender]);
-    createBarChart(wordCtx, senders, wordData, "Words");
     
-    // Profanity chart
-    if (summary.profanity_count_per_sender && document.getElementById('profanityChart')) {
-        const profanityCtx = document.getElementById('profanityChart').getContext('2d');
-        
-        // Filter out senders with no profanity
-        const sendersWithProfanity = senders.filter(sender => summary.profanity_count_per_sender[sender] > 0);
-        const profanityData = sendersWithProfanity.map(sender => summary.profanity_count_per_sender[sender]);
-        
-        // Use vibrant colors for profanity chart
-        const profanityColors = generateColors(sendersWithProfanity.length).map(color => color.replace('60%', '50%'));
-        
-        // Only create chart if there's data
-        if (sendersWithProfanity.length > 0) {
-            createPieChart(profanityCtx, sendersWithProfanity, profanityData, "Insultes", profanityColors);
-            
-            // Update profanity list
-            const profanityList = document.getElementById('profanity-list');
-            if (profanityList) {
-                profanityList.innerHTML = '';
-                
-                // Sort senders by profanity count
-                const sortedProfanitySenders = [...sendersWithProfanity];
-                sortedProfanitySenders.sort((a, b) => 
-                    summary.profanity_count_per_sender[b] - summary.profanity_count_per_sender[a]
-                );
-                
-                sortedProfanitySenders.forEach((sender) => {
-                    const count = summary.profanity_count_per_sender[sender];
-                    const li = document.createElement('li');
-                    li.textContent = `${sender}: ${count} insulte${count > 1 ? 's' : ''}`;
-                    profanityList.appendChild(li);
-                });
-            }
-            
-            // Show profanity words list
-            const profanityWords = document.getElementById('profanity-words');
-            if (profanityWords && summary.profanity_list) {
-                profanityWords.textContent = summary.profanity_list.join(', ');
-            }
-        } else {
-            // No profanity found
-            const chartContainer = profanityCtx.canvas.parentNode;
-            chartContainer.innerHTML = '<p class="no-data">Aucune insulte trouvée dans la conversation</p>';
-            
-            const profanityList = document.getElementById('profanity-list');
-            if (profanityList) {
-                profanityList.innerHTML = '<li>Aucune insulte détectée</li>';
-            }
-            
-            // Show profanity words list anyway
-            const profanityWords = document.getElementById('profanity-words');
-            if (profanityWords && summary.profanity_list) {
-                profanityWords.textContent = summary.profanity_list.join(', ');
-            }
-        }
+    createBarChart(wordCtx.getContext('2d'), senders, wordData, "Words");
+}
+
+// Update profanity list with sorted data
+function updateProfanityList(summary, sendersWithProfanity) {
+    const profanityList = document.getElementById('profanity-list');
+    if (!profanityList) return;
+    
+    profanityList.innerHTML = '';
+    
+    // Sort senders by profanity count
+    const sortedProfanitySenders = [...sendersWithProfanity];
+    sortedProfanitySenders.sort((a, b) => 
+        summary.profanity_count_per_sender[b] - summary.profanity_count_per_sender[a]
+    );
+    
+    sortedProfanitySenders.forEach((sender) => {
+        const count = summary.profanity_count_per_sender[sender];
+        const li = document.createElement('li');
+        li.textContent = `${sender}: ${count} insulte${count > 1 ? 's' : ''}`;
+        profanityList.appendChild(li);
+    });
+}
+
+// Show profanity words list
+function showProfanityWordsList(summary) {
+    const profanityWords = document.getElementById('profanity-words');
+    if (!profanityWords || !summary.profanity_list) return;
+    
+    profanityWords.textContent = summary.profanity_list.join(', ');
+}
+
+// Handle no profanity case
+function handleNoProfanityFound(summary, profanityCtx) {
+    const chartContainer = profanityCtx.canvas.parentNode;
+    chartContainer.innerHTML = '<p class="no-data">Aucune insulte trouvée dans la conversation</p>';
+    
+    const profanityList = document.getElementById('profanity-list');
+    if (profanityList) {
+        profanityList.innerHTML = '<li>Aucune insulte détectée</li>';
     }
+    
+    showProfanityWordsList(summary);
+}
+
+// Create profanity chart and related elements
+function createProfanityChart(summary) {
+    if (!summary.profanity_count_per_sender) return;
+    
+    const profanityCtx = document.getElementById('profanityChart');
+    if (!profanityCtx) return;
+    
+    const senders = summary.unique_senders_list;
+    
+    // Filter out senders with no profanity
+    const sendersWithProfanity = senders.filter(sender => summary.profanity_count_per_sender[sender] > 0);
+    const profanityData = sendersWithProfanity.map(sender => summary.profanity_count_per_sender[sender]);
+    
+    // Use vibrant colors for profanity chart
+    const profanityColors = generateColors(sendersWithProfanity.length).map(color => color.replace('60%', '50%'));
+    
+    // Only create chart if there's data
+    if (sendersWithProfanity.length > 0) {
+        createPieChart(profanityCtx.getContext('2d'), sendersWithProfanity, profanityData, "Insultes", profanityColors);
+        updateProfanityList(summary, sendersWithProfanity);
+        showProfanityWordsList(summary);
+    } else {
+        handleNoProfanityFound(summary, profanityCtx.getContext('2d'));
+    }
+}
+
+// Main function to update the page with summary data
+async function updatePageWithSummary() {
+    const summary = await getSummary();
+    if (!summary) return;
+    
+    updateStatCards(summary);
+    updateParticipantsList(summary);
+    createMessageDistributionChart(summary);
+    createCharactersChart(summary);
+    createWordsChart(summary);
+    createProfanityChart(summary);
 }
 
 document.addEventListener('DOMContentLoaded', updatePageWithSummary);
