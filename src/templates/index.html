@@ -6,18 +6,49 @@
 <section class="upload-section">
     <div class="container">
         <h2>Analyze Your Chat</h2>
-        <p>Upload a chat export file to get detailed analytics and insights.</p>
+        <p>Upload a chat export file to get detailed analytics and insights about your conversations.</p>
         
         <div class="upload-card">
             <form action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data">
                 <div class="form-group">
-                    <label for="chat-file">Select your chat export file:</label>
-                    <input type="file" id="chat-file" name="file" required>
+                    <label for="chat-file">Upload your chat export file</label>
+                    <div class="file-input-container">
+                        <input type="file" id="chat-file" name="file" required>
+                        <div class="file-input-ui">
+                            <div class="file-input-icon">📂</div>
+                            <div class="file-input-text">Drag & drop your file here or click to browse</div>
+                            <div class="file-name" id="file-name"></div>
+                        </div>
+                    </div>
                 </div>
                 <button type="submit" class="btn btn-primary">Analyze Now</button>
             </form>
         </div>
         
+        <div class="features-list">
+            <div class="feature-item">
+                <div class="feature-icon">📊</div>
+                <h3 class="feature-title">Message Statistics</h3>
+                <p class="feature-description">See who sends the most messages and when conversations are most active.</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">💬</div>
+                <h3 class="feature-title">Content Analysis</h3>
+                <p class="feature-description">Discover common words, topics, and language patterns in your chats.</p>
+            </div>
+            <div class="feature-item">
+                <div class="feature-icon">🔍</div>
+                <h3 class="feature-title">Profanity Detection</h3>
+                <p class="feature-description">Identify inappropriate language and who uses it most frequently.</p>
+            </div>
+        </div>
     </div>
 </section>
+
+<script>
+    document.getElementById('chat-file').addEventListener('change', function(e) {
+        const fileName = e.target.files[0] ? e.target.files[0].name : '';
+        document.getElementById('file-name').textContent = fileName ? `Selected: ${fileName}` : '';
+    });
+</script>
 {% endblock %}
