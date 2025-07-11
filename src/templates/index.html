@@ -44,11 +44,8 @@
         </div>
     </div>
 </section>
+{% endblock %}
 
-<script>
-    document.getElementById('chat-file').addEventListener('change', function(e) {
-        const fileName = e.target.files[0] ? e.target.files[0].name : '';
-        document.getElementById('file-name').textContent = fileName ? `Selected: ${fileName}` : '';
-    });
-</script>
+{% block extra_js %}
+<script src="{{ url_for('static', filename='scripts/js/upload.js') }}"></script>
 {% endblock %}
