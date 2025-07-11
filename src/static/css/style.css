@@ -17,13 +17,17 @@ header {
 .site-header {
   display: flex;
   justify-content: space-between;
-  padding: 30px 15px;
+  padding: 30px 20px;
 }
 
 nav {
   display: flex;
   align-items: center;
   gap: 20px;
+}
+
+nav a svg:hover {
+  fill: rgb(221, 221, 221);
 }
 
 main {
