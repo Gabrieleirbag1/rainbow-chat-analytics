@@ -9,15 +9,12 @@
 </head>
 <body>
     <header class="site-header">
-        {% block header %}
         <h1>Rainbow Chat Analytics</h1>
-        <nav class="main-nav">
-            <ul>
-                <li><a href="{{ url_for('index') }}">Home</a></li>
-                <!-- Add more navigation items as needed -->
-            </ul>
-        </nav>
+        {% block header %}
         {% endblock %}
+        <nav class="main-nav">
+            <a href="{{ url_for('index') }}">Home</a>
+        </nav>
     </header>
     
     <main class="main-content">
